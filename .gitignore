@@ -1,0 +1,5 @@
+/node_modules
+/.trae
+.DS_Store
+.env
+.mcp.json
