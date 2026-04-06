@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Phone, ArrowRight, ChevronDown, Loader2, CheckCircle2 } from 'lucide-react'
 import { proposalsApi, ApiError } from '../api'
