@@ -11,13 +11,21 @@ export class ApiError extends Error {
 export class ApiClient {
   constructor(private readonly baseUrl: string) {}
 
+  private async handleResponse<TResponse>(res: Response): Promise<TResponse> {
+    if (res.status === 401) {
+      globalThis.location.href = '/login'
+    }
+    const text = await res.text()
+    if (!res.ok) throw new ApiError(res.status, text)
+    return JSON.parse(text) as TResponse
+  }
+
   async get<TResponse>(path: string): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     })
-    if (!res.ok) throw new ApiError(res.status, await res.text())
-    return res.json() as Promise<TResponse>
+    return this.handleResponse<TResponse>(res)
   }
 
   async post<TBody, TResponse>(path: string, body: TBody): Promise<TResponse> {
@@ -27,8 +35,7 @@ export class ApiClient {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    if (!res.ok) throw new ApiError(res.status, await res.text())
-    return res.json() as Promise<TResponse>
+    return this.handleResponse<TResponse>(res)
   }
 
   async put<TBody, TResponse>(path: string, body: TBody): Promise<TResponse> {
@@ -38,8 +45,7 @@ export class ApiClient {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    if (!res.ok) throw new ApiError(res.status, await res.text())
-    return res.json() as Promise<TResponse>
+    return this.handleResponse<TResponse>(res)
   }
 
   async patch<TBody, TResponse>(path: string, body: TBody): Promise<TResponse> {
@@ -49,8 +55,7 @@ export class ApiClient {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
-    if (!res.ok) throw new ApiError(res.status, await res.text())
-    return res.json() as Promise<TResponse>
+    return this.handleResponse<TResponse>(res)
   }
 
   async postFile<TResponse>(path: string, formData: FormData): Promise<TResponse> {
@@ -60,8 +65,7 @@ export class ApiClient {
       // No Content-Type header — browser sets it with the correct boundary
       body: formData,
     })
-    if (!res.ok) throw new ApiError(res.status, await res.text())
-    return res.json() as Promise<TResponse>
+    return this.handleResponse<TResponse>(res)
   }
 
   async delete<TResponse>(path: string): Promise<TResponse> {
@@ -70,7 +74,6 @@ export class ApiClient {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     })
-    if (!res.ok) throw new ApiError(res.status, await res.text())
-    return res.json() as Promise<TResponse>
+    return this.handleResponse<TResponse>(res)
   }
 }
