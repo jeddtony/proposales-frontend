@@ -49,6 +49,16 @@ export class ApiClient {
     return res.json() as Promise<TResponse>
   }
 
+  async postFile<TResponse>(path: string, formData: FormData): Promise<TResponse> {
+    const res = await fetch(`${this.baseUrl}${path}`, {
+      method: 'POST',
+      // No Content-Type header — browser sets it with the correct boundary
+      body: formData,
+    })
+    if (!res.ok) throw new ApiError(res.status, await res.text())
+    return res.json() as Promise<TResponse>
+  }
+
   async delete<TResponse>(path: string): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'DELETE',

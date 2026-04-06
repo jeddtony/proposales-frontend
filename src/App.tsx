@@ -4,6 +4,7 @@ import AnalyticsPage from './pages/AnalyticsPage'
 import ProposalsPage from './pages/ProposalsPage'
 import RfpInboxPage from './pages/RfpInboxPage'
 import ProposalViewPage from './pages/ProposalViewPage'
+import ContentPage from './pages/ContentPage'
 
 /** Inner app wrapped by sidebar + topbar */
 function AppRoutes() {
@@ -14,6 +15,7 @@ function AppRoutes() {
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/proposals" element={<ProposalsPage />} />
         <Route path="/inbox" element={<RfpInboxPage />} />
+        <Route path="/content" element={<ContentPage />} />
       </Routes>
     </AppLayout>
   )

@@ -10,6 +10,7 @@ import {
   HelpCircle,
   LogOut,
   LucideIcon,
+  Library,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
@@ -25,6 +26,7 @@ export const DEFAULT_NAV_ITEMS: NavItem[] = [
   { key: 'rfp-inbox',  label: 'RFP Inbox',  icon: Inbox,           path: '/inbox'      },
   { key: 'proposals',  label: 'Proposals',  icon: FileText,        path: '/proposals'  },
   { key: 'analytics',  label: 'Analytics',  icon: BarChart2,       path: '/analytics'  },
+  { key: 'content',    label: 'Content',    icon: Library,         path: '/content'    },
   { key: 'clients',    label: 'Clients',    icon: Users,           path: '/clients'    },
   { key: 'settings',   label: 'Settings',   icon: Settings,        path: '/settings'   },
 ]
