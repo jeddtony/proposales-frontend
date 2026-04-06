@@ -210,6 +210,16 @@ export interface ProposalDraftResponse {
   blocks?: ProposalDraftData['blocks']
 }
 
+export interface LoginBody {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  data: { email: string }
+  message: string
+}
+
 // ── Resource class ───────────────────────────────────────────────────────────
 
 export class ProposalsApi {
@@ -280,5 +290,9 @@ export class ProposalsApi {
 
   getProposal(uuid: string): Promise<ProposalDraftData> {
     return this.client.get(`/proposals/${uuid}`)
+  }
+
+  login(body: LoginBody): Promise<LoginResponse> {
+    return this.client.post('/login', body)
   }
 }

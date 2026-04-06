@@ -22,7 +22,7 @@ export interface NavItem {
 }
 
 export const DEFAULT_NAV_ITEMS: NavItem[] = [
-  { key: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard, path: '/'           },
+  { key: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard, path: '/dashboard'  },
   { key: 'rfp-inbox',  label: 'RFP Inbox',  icon: Inbox,           path: '/inbox'      },
   { key: 'proposals',  label: 'Proposals',  icon: FileText,        path: '/proposals'  },
   { key: 'analytics',  label: 'Analytics',  icon: BarChart2,       path: '/analytics'  },
@@ -93,7 +93,7 @@ export default function SideNav({
       {/* Nav links */}
       <div className="flex-1 flex flex-col gap-1">
         {navItems.map(({ key, label, icon: Icon, path }) => {
-          const isActive = pathname === path || (path !== '/' && pathname.startsWith(path))
+          const isActive = pathname === path || (path.length > 1 && pathname.startsWith(path))
           return (
             <div key={key} className="relative group">
               <Link

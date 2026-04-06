@@ -13,6 +13,7 @@ export class ApiClient {
 
   async get<TResponse>(path: string): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     })
     if (!res.ok) throw new ApiError(res.status, await res.text())
@@ -22,6 +23,7 @@ export class ApiClient {
   async post<TBody, TResponse>(path: string, body: TBody): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
@@ -32,6 +34,7 @@ export class ApiClient {
   async put<TBody, TResponse>(path: string, body: TBody): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
@@ -42,6 +45,7 @@ export class ApiClient {
   async patch<TBody, TResponse>(path: string, body: TBody): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
@@ -52,6 +56,7 @@ export class ApiClient {
   async postFile<TResponse>(path: string, formData: FormData): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'POST',
+      credentials: 'include',
       // No Content-Type header — browser sets it with the correct boundary
       body: formData,
     })
@@ -62,6 +67,7 @@ export class ApiClient {
   async delete<TResponse>(path: string): Promise<TResponse> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       method: 'DELETE',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
     })
     if (!res.ok) throw new ApiError(res.status, await res.text())
