@@ -8,9 +8,11 @@ import ProposalPreviewModal from '../proposal/ProposalPreviewModal'
 
 interface RfpChatPanelProps {
   proposalRequestId: number
+  proposalUuid?: string
+  proposalGeneratedAt?: string
 }
 
-export default function RfpChatPanel({ proposalRequestId }: RfpChatPanelProps) {
+export default function RfpChatPanel({ proposalRequestId, proposalUuid, proposalGeneratedAt }: RfpChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
@@ -217,6 +219,13 @@ export default function RfpChatPanel({ proposalRequestId }: RfpChatPanelProps) {
     {previewOpen && (
       <ProposalPreviewModal
         proposalRequestId={proposalRequestId}
+        proposalUuid={proposalUuid}
+        showRegenerate={(() => {
+          if (!proposalUuid || !proposalGeneratedAt) return false
+          const lastMsg = [...messages].reverse().find((m) => m.role === 'user' || m.role === 'assistant')
+          if (!lastMsg) return false
+          return new Date(lastMsg.createdAt) > new Date(proposalGeneratedAt)
+        })()}
         onClose={() => setPreviewOpen(false)}
       />
     )}

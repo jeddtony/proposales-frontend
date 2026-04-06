@@ -21,4 +21,12 @@ export type {
   RelevantContentResponse,
   ProposalDraftData,
   ProposalDraftResponse,
+  ContentItem,
+  GetContentResponse,
+  CreateContentBody,
+  CreateContentResponse,
+  BulkUploadContentResponse,
+  UpdateContentBody,
+  UpdateContentResponse,
+  DeleteContentResponse,
 } from './proposals'

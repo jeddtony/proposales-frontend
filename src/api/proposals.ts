@@ -11,6 +11,8 @@ export interface ProposalRequest {
   details: string
   createdAt: string
   updatedAt: string
+  proposal_uuid?: string
+  proposal_generated_at?: string
 }
 
 // ── Request bodies ───────────────────────────────────────────────────────────
@@ -78,6 +80,92 @@ export interface RelevantProduct {
 export interface RelevantContentResponse {
   data: RelevantProduct[]
   message: string
+}
+
+// ── Content management shapes ─────────────────────────────────────────────────
+
+export interface ContentItem {
+  variation_id: number
+  product_id: number
+  created_at: number
+  deactivated_at: string | null
+  integration_metadata: unknown
+  integration_id: string | null
+  title: Record<string, string>
+  description: Record<string, string>
+}
+
+export interface GetContentResponse {
+  data: ContentItem[]
+}
+
+export interface CreateContentBody {
+  title: string
+  language: string
+  description: string
+  image_url: string
+}
+
+export interface CreateContentResponse {
+  data: {
+    product_id: number
+    variation_id: number
+    message: string
+  }
+  message: string
+}
+
+export interface BulkUploadContentResponse {
+  message: string
+  data?: {
+    created?: number
+    failed?: number
+    errors?: string[]
+  }
+}
+
+export interface UpdateContentBody {
+  variation_id: number
+  language: string
+  title: string
+  description: string
+  image_url: string
+}
+
+export interface UpdateContentResponse {
+  message: string
+}
+
+export interface DeleteContentResponse {
+  message: string
+}
+
+// ── Create proposal from draft ────────────────────────────────────────────────
+
+export interface CreateProposalBody {
+  language?: string
+  title_md?: string
+  description_md?: string
+  recipient?: {
+    first_name?: string
+    last_name?: string
+    email?: string
+    phone?: string
+    company_name?: string
+    id?: number
+  }
+  tax_options?: { mode: string; tax_included: boolean }
+  blocks?: unknown[]
+  invoicing_enabled?: boolean
+  creator_email?: string
+  contact_email?: string
+}
+
+export interface CreateProposalResponse {
+  uuid?: string
+  id?: number | string
+  message?: string
+  data?: { uuid?: string; id?: number | string }
 }
 
 // ── Proposal draft shapes ────────────────────────────────────────────────────
@@ -162,5 +250,35 @@ export class ProposalsApi {
 
   getProposalDraft(proposalRequestId: number): Promise<ProposalDraftData> {
     return this.client.get(`/proposal-requests/${proposalRequestId}/proposal-draft`)
+  }
+
+  getContent(): Promise<GetContentResponse> {
+    return this.client.get('/proposales/content')
+  }
+
+  createContent(body: CreateContentBody): Promise<CreateContentResponse> {
+    return this.client.post('/content', body)
+  }
+
+  bulkUploadContent(file: File): Promise<BulkUploadContentResponse> {
+    const form = new FormData()
+    form.append('file', file)
+    return this.client.postFile('/content/bulk-upload', form)
+  }
+
+  updateContent(body: UpdateContentBody): Promise<UpdateContentResponse> {
+    return this.client.put('/content', body)
+  }
+
+  deleteContent(variationId: number): Promise<DeleteContentResponse> {
+    return this.client.delete(`/content?variation_id=${variationId}`)
+  }
+
+  createProposal(body: CreateProposalBody): Promise<CreateProposalResponse> {
+    return this.client.post('/proposals', body)
+  }
+
+  getProposal(uuid: string): Promise<ProposalDraftData> {
+    return this.client.get(`/proposals/${uuid}`)
   }
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, FileText, ExternalLink, ChevronDown, ChevronUp, Play, Loader2, AlertCircle } from 'lucide-react'
+import { X, FileText, ExternalLink, ChevronDown, ChevronUp, Play, Loader2, AlertCircle, Send, CheckCircle2, RefreshCw } from 'lucide-react'
 import { proposalsApi, ApiError } from '../../api'
 import type { ProposalDraftData } from '../../api'
 import type { ProductBlock, VideoBlock } from '../../types/proposal'
@@ -179,35 +179,89 @@ function SummaryCard({ draft }: { draft: ProposalDraftData }) {
 
 interface ProposalPreviewModalProps {
   proposalRequestId: number
+  proposalUuid?: string
+  showRegenerate?: boolean
   onClose: () => void
 }
 
-export default function ProposalPreviewModal({ proposalRequestId, onClose }: ProposalPreviewModalProps) {
+export default function ProposalPreviewModal({ proposalRequestId, proposalUuid, showRegenerate, onClose }: ProposalPreviewModalProps) {
   const [draft, setDraft] = useState<ProposalDraftData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
+  const [created, setCreated] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [regenerating, setRegenerating] = useState(false)
+  const [regenerated, setRegenerated] = useState(false)
+
+  async function handleRegenerate() {
+    setRegenerating(true)
+    try {
+      const res = await proposalsApi.getProposalDraft(proposalRequestId)
+      setDraft({ ...res, blocks: res.blocks ?? [] })
+      setRegenerated(true)
+    } catch {
+      // keep existing draft on failure
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
+  async function handleCreateProposal() {
+    if (!draft) return
+    setCreating(true)
+    setCreateError(null)
+    try {
+      const nameParts = draft.recipient_name?.split(' ') ?? []
+      await proposalsApi.createProposal({
+        language: draft.language,
+        title_md: draft.title_md,
+        description_md: draft.description_md ?? undefined,
+        recipient: draft.recipient_is_set ? {
+          first_name: nameParts[0],
+          last_name: nameParts.slice(1).join(' ') || undefined,
+          email: draft.recipient_email ?? undefined,
+          phone: draft.recipient_phone ?? undefined,
+          company_name: draft.recipient_company_name ?? undefined,
+        } : undefined,
+        tax_options: draft.tax_options,
+        blocks: draft.blocks,
+      })
+      setCreated(true)
+    } catch (err) {
+      setCreateError(
+        err instanceof ApiError
+          ? `Failed to create proposal (${err.status})`
+          : 'Could not create the proposal. Please try again.',
+      )
+    } finally {
+      setCreating(false)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
-    proposalsApi
-      .getProposalDraft(proposalRequestId)
+    const request = proposalUuid
+      ? proposalsApi.getProposal(proposalUuid)
+      : proposalsApi.getProposalDraft(proposalRequestId)
+
+    request
       .then((res) => {
         if (cancelled) return
-        // Ensure blocks is always an array even if the field is missing
         setDraft({ ...res, blocks: res.blocks ?? [] })
       })
       .catch((err) => {
         if (!cancelled)
           setError(
             err instanceof ApiError
-              ? `Failed to load draft (${err.status})`
-              : 'Could not load the proposal draft.',
+              ? `Failed to load proposal (${err.status})`
+              : 'Could not load the proposal.',
           )
       })
       .finally(() => { if (!cancelled) setLoading(false) })
 
     return () => { cancelled = true }
-  }, [proposalRequestId])
+  }, [proposalRequestId, proposalUuid])
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -227,22 +281,70 @@ export default function ProposalPreviewModal({ proposalRequestId, onClose }: Pro
         `}</style>
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0">
-          <div className="flex items-center gap-2.5">
-            <FileText className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-[#0a1b39] text-sm">Proposal Preview</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700 uppercase tracking-wide">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-white shrink-0 gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <FileText className="w-4 h-4 text-primary shrink-0" />
+            <span className="font-semibold text-[#0a1b39] text-sm truncate">Proposal Preview</span>
+            <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700 uppercase tracking-wide">
               Draft
             </span>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close preview"
-            className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Regenerate — only when chat is newer than the generated proposal */}
+            {draft && showRegenerate && !regenerating && (
+              <button
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                title="Chat has new messages — regenerate draft"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 text-xs font-semibold transition active:scale-95 cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${regenerated ? '' : 'animate-none'}`} />
+                Regenerate
+              </button>
+            )}
+            {regenerating && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 text-xs font-semibold">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Regenerating…
+              </div>
+            )}
+
+            {draft && !proposalUuid && (
+              created ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-semibold">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Proposal Created
+                </div>
+              ) : (
+                <button
+                  onClick={handleCreateProposal}
+                  disabled={creating}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:brightness-110 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {creating
+                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Creating…</>
+                    : <><Send className="w-3.5 h-3.5" />Create Proposal</>
+                  }
+                </button>
+              )
+            )}
+            <button
+              onClick={onClose}
+              aria-label="Close preview"
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
+
+        {/* Inline error for create */}
+        {createError && (
+          <div className="flex items-center gap-2 px-5 py-2.5 bg-red-50 border-b border-red-100 text-xs text-red-600 shrink-0">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            {createError}
+          </div>
+        )}
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto">

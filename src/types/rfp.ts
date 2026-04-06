@@ -26,6 +26,8 @@ export interface RfpItem {
   contact: RfpContact
   aiDraft: string
   revenue: string
+  proposal_uuid?: string
+  proposal_generated_at?: string
 }
 
 export const DUMMY_RFPS: RfpItem[] = [
