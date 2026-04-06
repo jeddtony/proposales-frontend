@@ -68,6 +68,8 @@ function mapToRfpItem(req: ProposalRequest): RfpItem {
       'Warm regards,\n[Your Name]',
     ].join('\n'),
     revenue: '—',                    // not in API — placeholder
+    proposal_uuid: req.proposal_uuid,
+    proposal_generated_at: req.proposal_generated_at,
   }
 }
 
@@ -319,7 +321,11 @@ export default function RfpInboxPage() {
                     onRegenerate={(id) => console.log('Regenerate:', id)}
                   />
                 ) : (
-                  <RfpChatPanel proposalRequestId={parseInt(selected.id, 10)} />
+                  <RfpChatPanel
+                    proposalRequestId={parseInt(selected.id, 10)}
+                    proposalUuid={selected.proposal_uuid}
+                    proposalGeneratedAt={selected.proposal_generated_at}
+                  />
                 )}
               </div>
             </>
