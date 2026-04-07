@@ -182,7 +182,7 @@ export default function LoginPage() {
                 Want to try the demo?{' '}
                 <button
                   type="button"
-                  onClick={() => { setEmail('admin@mail.com'); setPassword('password1') }}
+                  onClick={() => { setEmail('admin@mail.com'); setPassword('password123') }}
                   className="text-[#0a1b39] font-bold hover:underline underline-offset-4 transition-colors cursor-pointer"
                 >
                   Fill demo credentials

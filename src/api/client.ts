@@ -13,7 +13,7 @@ export class ApiClient {
 
   private async handleResponse<TResponse>(res: Response): Promise<TResponse> {
     if (res.status === 401) {
-      // globalThis.location.href = '/login'
+      globalThis.location.href = '/login'
     }
     const text = await res.text()
     if (!res.ok) throw new ApiError(res.status, text)
