@@ -4,5 +4,5 @@
 .env
 .mcp.json
 .vscode
-/.claude
-/.agents
+/.claude_max
+/.agents_max
