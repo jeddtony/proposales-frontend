@@ -16,6 +16,9 @@ export interface ProposalRequest {
   proposal_uuid?: string
   proposal_url?: string
   proposal_generated_at?: string
+  guests?: number
+  event_date?: string
+  budget?: number
 }
 
 export interface ProposalRequestsMeta {

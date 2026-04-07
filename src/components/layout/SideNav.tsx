@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
-  FileText,
   BarChart2,
   Users,
   Settings,
@@ -60,7 +59,6 @@ export default function SideNav({
   isMobileOpen = false,
   onMobileClose,
   onSupport,
-  onSignOut,
 }: SideNavProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()

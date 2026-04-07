@@ -203,7 +203,7 @@ export default function RfpInboxPage() {
               <AlertCircle className="w-8 h-8 text-error" />
               <p className="text-sm text-on-surface-variant">{listError}</p>
               <button
-                onClick={fetchList}
+                onClick={() => fetchList(page)}
                 className="text-sm text-primary hover:underline cursor-pointer"
               >
                 Try again
