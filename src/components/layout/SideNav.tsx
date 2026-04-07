@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
-  BarChart2,
   Users,
   Settings,
   Inbox,
@@ -23,7 +22,6 @@ export interface NavItem {
 export const DEFAULT_NAV_ITEMS: NavItem[] = [
   { key: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard, path: '/dashboard'  },
   { key: 'rfp-inbox',  label: 'RFP Inbox',  icon: Inbox,           path: '/inbox'      },
-  { key: 'analytics',  label: 'Analytics',  icon: BarChart2,       path: '/analytics'  },
   { key: 'content',    label: 'Content',    icon: Library,         path: '/content'    },
   { key: 'clients',    label: 'Clients',    icon: Users,           path: '/clients'    },
   { key: 'settings',   label: 'Settings',   icon: Settings,        path: '/settings'   },
