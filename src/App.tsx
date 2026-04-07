@@ -5,6 +5,8 @@ import ProposalsPage from './pages/ProposalsPage'
 import RfpInboxPage from './pages/RfpInboxPage'
 import ProposalViewPage from './pages/ProposalViewPage'
 import ContentPage from './pages/ContentPage'
+import ClientsPage from './pages/ClientsPage'
+import SettingsPage from './pages/SettingsPage'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 
@@ -14,10 +16,11 @@ function AppRoutes() {
     <AppLayout>
       <Routes>
         <Route path="/dashboard" element={<AnalyticsPage />} />
-        <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/proposals" element={<ProposalsPage />} />
         <Route path="/inbox" element={<RfpInboxPage />} />
         <Route path="/content" element={<ContentPage />} />
+        <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </AppLayout>
   )

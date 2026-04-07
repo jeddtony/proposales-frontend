@@ -18,9 +18,16 @@ import { cn } from '../../lib/utils'
 
 function downloadTemplate() {
   const rows = [
-    { title: 'Ballroom Scenery',  language: 'en', description: 'Elegant ballroom for 500 guests',   image_url: 'https://16r3itju75.ucarecd.net/b88e7077-bc0f-4b12-b665-43e7691bab39/' },
-    { title: 'Rooftop Terrace', language: 'en', description: 'Open-air terrace with city views',  image_url: 'https://16r3itju75.ucarecd.net/ac3aa9a0-1521-4be1-b8a0-54c49ce576f7/rooftopterrace.jpg' },
-    { title: 'Conference Hall', language: 'sv', description: 'Konferenslokal för 200 personer',   image_url: 'https://16r3itju75.ucarecd.net/80ba2690-114b-4d5a-811e-01b579cc3c66/conferencehall.jpg' },
+    { title: 'Grand Ballroom',        language: 'en', description: 'Elegant ballroom for up to 500 guests with crystal chandeliers and marble floors',         image_url: 'https://16r3itju75.ucarecd.net/b88e7077-bc0f-4b12-b665-43e7691bab39/' },
+    { title: 'Rooftop Terrace',       language: 'en', description: 'Open-air rooftop terrace with panoramic city views, perfect for cocktail receptions',       image_url: 'https://16r3itju75.ucarecd.net/ac3aa9a0-1521-4be1-b8a0-54c49ce576f7/rooftopterrace.jpg' },
+    { title: 'Konferenslokal',        language: 'sv', description: 'Modern konferenslokal för 200 personer med full AV-utrustning och dagljus',                 image_url: 'https://16r3itju75.ucarecd.net/80ba2690-114b-4d5a-811e-01b579cc3c66/conferencehall.jpg' },
+    { title: 'Garden Terrace',        language: 'en', description: 'Lush outdoor garden terrace with string lights, ideal for summer weddings up to 300 guests', image_url: 'https://16r3itju75.ucarecd.net/e5f5993a-5cc3-4dc9-9a81-324f6171f131/-/preview/1000x558/' },
+    { title: 'Executive Boardroom',   language: 'en', description: 'Sophisticated boardroom for 20 executives with integrated video conferencing technology',    image_url: 'https://16r3itju75.ucarecd.net/7e065a30-cac0-45f3-bcde-31b569d9b62b/-/preview/1000x545/' },
+    { title: 'Trädgårdspaviljong',    language: 'sv', description: 'Vacker utomhuspaviljong omgiven av grönska, perfekt för bröllop och sommargalor',           image_url: 'https://16r3itju75.ucarecd.net/52cfb2e1-e774-4b15-badb-252301908be3/-/preview/1000x545/' },
+    { title: 'The Cellar Lounge',     language: 'en', description: 'Intimate underground lounge with exposed brick and mood lighting for up to 80 guests',       image_url: 'https://16r3itju75.ucarecd.net/c6df55b6-beae-4632-9290-3d7f19b9e9c6/-/preview/1000x545/' },
+    { title: 'Spegelsalen',           language: 'sv', description: 'Historisk spegelsal med förgyllda detaljer och parkettgolv, passar 150 gäster',             image_url: 'https://16r3itju75.ucarecd.net/50697c94-8805-4ded-8def-856047bcd690/-/preview/1000x545/' },
+    { title: 'Lakeside Pavilion',     language: 'en', description: 'Waterfront pavilion with private dock and sunset views, seats up to 120 guests for dinner',  image_url: 'https://16r3itju75.ucarecd.net/6b0a493e-8dde-48d3-8c84-4f03841ede09/-/preview/1000x545/' },
+    { title: 'Event Hall with Accessibilty',      language: 'en', description: 'Accessible event hall with wheelchair ramps and designated seating',     image_url: 'https://16r3itju75.ucarecd.net/e69e962c-c1ad-4b35-84cd-d9bc5e651d4e/-/preview/1000x545/' },
   ]
 
   const ws = XLSX.utils.json_to_sheet(rows, { header: ['title', 'language', 'description', 'image_url'] })
@@ -203,24 +210,39 @@ export default function BulkUploadModal({ onClose, onUploaded }: BulkUploadModal
 
           {/* Success result */}
           {state === 'success' && result && (
-            <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-emerald-800">Upload successful</p>
-                {result.data && (
-                  <p className="text-xs text-emerald-600 mt-0.5">
-                    {result.data.created !== undefined && `${result.data.created} created`}
-                    {result.data.failed !== undefined && result.data.failed > 0 && ` · ${result.data.failed} failed`}
-                  </p>
-                )}
-                {result.data?.errors && result.data.errors.length > 0 && (
-                  <ul className="mt-1 space-y-0.5">
-                    {result.data.errors.map((e, i) => (
-                      <li key={i} className="text-xs text-red-500">{e}</li>
-                    ))}
-                  </ul>
-                )}
+            <div className="space-y-3">
+              {/* Summary row */}
+              <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-emerald-800">Upload complete</p>
+                  {result.summary && (
+                    <p className="text-xs text-emerald-600 mt-0.5">
+                      {result.summary.succeeded} succeeded
+                      {result.summary.failed > 0 && (
+                        <span className="text-red-500"> · {result.summary.failed} failed</span>
+                      )}
+                      {' '}out of {result.summary.total}
+                    </p>
+                  )}
+                </div>
               </div>
+
+              {/* Per-row errors */}
+              {result.data && result.data.some((r) => r.status === 'error') && (
+                <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+                  <p className="text-xs font-semibold text-red-700 mb-2">Failed rows</p>
+                  <ul className="space-y-1">
+                    {result.data
+                      .filter((r) => r.status === 'error')
+                      .map((r) => (
+                        <li key={r.row} className="text-xs text-red-600">
+                          <span className="font-medium">Row {r.row}:</span> {r.error}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -1,8 +1,18 @@
-import { Mail, Phone, Users, Calendar, DollarSign } from 'lucide-react'
+import { Mail, Phone, Users, Calendar, Banknote } from 'lucide-react'
 import type { RfpItem } from '../../types/rfp'
 
 interface RfpInquiryPanelProps {
   rfp: RfpItem
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatBudget(amount: number): string {
+  return new Intl.NumberFormat('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 }).format(amount)
 }
 
 export default function RfpInquiryPanel({ rfp }: RfpInquiryPanelProps) {
@@ -44,18 +54,24 @@ export default function RfpInquiryPanel({ rfp }: RfpInquiryPanelProps) {
       <div className="grid grid-cols-3 gap-3">
         <div className="flex flex-col items-center gap-1 p-3 bg-surface-container-low rounded-xl text-center">
           <Users className="w-4 h-4 text-primary" />
-          <span className="font-bold text-on-surface text-sm">{rfp.guests}</span>
+          <span className="font-bold text-on-surface text-sm">
+            {rfp.guests > 0 ? rfp.guests.toLocaleString() : '—'}
+          </span>
           <span className="text-[10px] text-secondary uppercase tracking-widest">Guests</span>
         </div>
         <div className="flex flex-col items-center gap-1 p-3 bg-surface-container-low rounded-xl text-center">
           <Calendar className="w-4 h-4 text-primary" />
-          <span className="font-bold text-on-surface text-xs leading-tight">{rfp.checkIn}</span>
-          <span className="text-[10px] text-secondary uppercase tracking-widest">Check-in</span>
+          <span className="font-bold text-on-surface text-xs leading-tight">
+            {rfp.event_date ? formatDate(rfp.event_date) : '—'}
+          </span>
+          <span className="text-[10px] text-secondary uppercase tracking-widest">Event Date</span>
         </div>
         <div className="flex flex-col items-center gap-1 p-3 bg-surface-container-low rounded-xl text-center">
-          <DollarSign className="w-4 h-4 text-primary" />
-          <span className="font-bold text-on-surface text-sm">{rfp.revenue}</span>
-          <span className="text-[10px] text-secondary uppercase tracking-widest">Est. Value</span>
+          <Banknote className="w-4 h-4 text-primary" />
+          <span className="font-bold text-on-surface text-sm">
+            {rfp.budget ? formatBudget(rfp.budget) : '—'}
+          </span>
+          <span className="text-[10px] text-secondary uppercase tracking-widest">Budget</span>
         </div>
       </div>
 

@@ -26,6 +26,8 @@ export interface RfpItem {
   contact: RfpContact
   aiDraft: string
   revenue: string
+  event_date?: string
+  budget?: number
   proposal_uuid?: string
   proposal_generated_at?: string
 }

@@ -11,8 +11,18 @@ export interface ProposalRequest {
   details: string
   createdAt: string
   updatedAt: string
+  created_at?: string
+  updated_at?: string
   proposal_uuid?: string
+  proposal_url?: string
   proposal_generated_at?: string
+}
+
+export interface ProposalRequestsMeta {
+  page: number
+  limit: number
+  total: number
+  total_pages: number
 }
 
 // ── Request bodies ───────────────────────────────────────────────────────────
@@ -23,6 +33,9 @@ export interface CreateProposalRequestBody {
   phone_number: string
   company_name: string
   details: string
+  event_date?: string
+  guests?: number
+  budget?: number
 }
 
 // ── Response envelopes ───────────────────────────────────────────────────────
@@ -35,6 +48,7 @@ export interface CreateProposalRequestResponse {
 
 export interface GetProposalRequestsResponse {
   data: ProposalRequest[]
+  meta?: ProposalRequestsMeta
   message: string
 }
 
@@ -115,13 +129,21 @@ export interface CreateContentResponse {
   message: string
 }
 
+export interface BulkUploadRowResult {
+  row: number
+  status: 'success' | 'error'
+  data?: { product_id: number; variation_id: number; message?: string }
+  error?: string
+}
+
 export interface BulkUploadContentResponse {
   message: string
-  data?: {
-    created?: number
-    failed?: number
-    errors?: string[]
+  summary?: {
+    total: number
+    succeeded: number
+    failed: number
   }
+  data?: BulkUploadRowResult[]
 }
 
 export interface UpdateContentBody {
@@ -210,6 +232,49 @@ export interface ProposalDraftResponse {
   blocks?: ProposalDraftData['blocks']
 }
 
+export interface Client {
+  email: string
+  name: string
+  phone_number: string
+  company_name: string
+  total_requests: number
+  last_request_at: string
+}
+
+export interface ClientsMeta {
+  page: number
+  limit: number
+  total: number
+  total_pages: number
+}
+
+export interface GetClientsResponse {
+  data: Client[]
+  meta: ClientsMeta
+  message: string
+}
+
+export interface AppSettings {
+  id: number
+  llm_provider: string
+  created_at: string
+  updated_at: string
+}
+
+export interface GetSettingsResponse {
+  data: AppSettings
+  message: string
+}
+
+export interface UpdateSettingsBody {
+  llm_provider: string
+}
+
+export interface UpdateSettingsResponse {
+  data: AppSettings
+  message: string
+}
+
 export interface LoginBody {
   email: string
   password: string
@@ -217,6 +282,27 @@ export interface LoginBody {
 
 export interface LoginResponse {
   data: { email: string }
+  message: string
+}
+
+// ── Dashboard stats ───────────────────────────────────────────────────────────
+
+export interface ProposalStat {
+  label: string
+  percentage: number
+  count: string
+  highlight?: boolean
+}
+
+export interface DashboardStats {
+  total_rfps: number
+  total_clients: number
+  rfps_last_7_days: number
+  proposal_stats: ProposalStat[]
+}
+
+export interface GetDashboardStatsResponse {
+  data: DashboardStats
   message: string
 }
 
@@ -231,8 +317,8 @@ export class ProposalsApi {
     return this.client.post('/proposal-requests', body)
   }
 
-  getProposalRequests(): Promise<GetProposalRequestsResponse> {
-    return this.client.get('/proposal-requests')
+  getProposalRequests(page = 1, limit = 20): Promise<GetProposalRequestsResponse> {
+    return this.client.get(`/proposal-requests?page=${page}&limit=${limit}`)
   }
 
   getProposalRequest(id: number): Promise<GetProposalRequestResponse> {
@@ -292,7 +378,27 @@ export class ProposalsApi {
     return this.client.get(`/proposals/${uuid}`)
   }
 
+  getClients(page = 1, limit = 20): Promise<GetClientsResponse> {
+    return this.client.get(`/clients?page=${page}&limit=${limit}`)
+  }
+
+  getSettings(): Promise<GetSettingsResponse> {
+    return this.client.get('/settings')
+  }
+
+  updateSettings(body: UpdateSettingsBody): Promise<UpdateSettingsResponse> {
+    return this.client.put('/settings', body)
+  }
+
   login(body: LoginBody): Promise<LoginResponse> {
     return this.client.post('/login', body)
+  }
+
+  logout(): Promise<void> {
+    return this.client.post('/logout', {})
+  }
+
+  getDashboardStats(): Promise<GetDashboardStatsResponse> {
+    return this.client.get('/dashboard/stats')
   }
 }

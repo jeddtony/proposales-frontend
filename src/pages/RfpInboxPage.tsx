@@ -1,18 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ArrowLeft, Loader2, AlertCircle, RefreshCw, Package } from 'lucide-react'
+import { ArrowLeft, Loader2, AlertCircle, RefreshCw, Package, ChevronLeft, ChevronRight } from 'lucide-react'
 import RfpTopBar from '../components/layout/RfpTopBar'
 import RfpCard from '../components/rfp/RfpCard'
 import RfpInquiryPanel from '../components/rfp/RfpInquiryPanel'
-import RfpDraftPanel from '../components/rfp/RfpDraftPanel'
 import RfpChatPanel from '../components/rfp/RfpChatPanel'
 import RelevantProductsModal from '../components/rfp/RelevantProductsModal'
-import ProposalLifecycle from '../components/rfp/ProposalLifecycle'
 import { proposalsApi, ApiError } from '../api'
-import type { ProposalRequest } from '../api'
-import type { RfpItem, RfpStatus } from '../types/rfp'
+import type { ProposalRequest, ProposalRequestsMeta } from '../api/proposals'
+import type { RfpItem } from '../types/rfp'
 
-type FilterValue = 'all' | RfpStatus
-type DetailTab = 'inquiry' | 'draft' | 'chat'
+type DetailTab = 'inquiry' | 'chat'
 
 // ── Mapping helpers ──────────────────────────────────────────────────────────
 
@@ -41,10 +38,12 @@ function mapToRfpItem(req: ProposalRequest): RfpItem {
     company: req.company_name,
     contactName: req.name,
     eventType: 'Event Request',      // not in API — placeholder
-    guests: 0,                        // not in API — placeholder
-    checkIn: 'TBD',                  // not in API — placeholder
-    checkOut: 'TBD',                 // not in API — placeholder
-    receivedAt: formatRelativeTime(req.createdAt),
+    guests: req.guests ?? 0,
+    checkIn: req.event_date ?? 'TBD',
+    checkOut: 'TBD',
+    event_date: req.event_date,
+    budget: req.budget,
+    receivedAt: formatRelativeTime(req.created_at ?? req.createdAt),
     status: 'pending',               // not in API — placeholder
     stage: 'inquiry',                // not in API — placeholder
     inquiryText: req.details,
@@ -79,25 +78,27 @@ export default function RfpInboxPage() {
   const [rfps, setRfps] = useState<RfpItem[]>([])
   const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
+  const [meta, setMeta] = useState<ProposalRequestsMeta | null>(null)
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
 
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<FilterValue>('all')
   const [detailTab, setDetailTab] = useState<DetailTab>('inquiry')
   const [mobileShowDetail, setMobileShowDetail] = useState(false)
   const [productsModalOpen, setProductsModalOpen] = useState(false)
 
-  // ── Fetch list on mount ──────────────────────────────────────────────────
-  async function fetchList() {
+  // ── Fetch list ───────────────────────────────────────────────────────────
+  async function fetchList(p: number = page) {
     setListLoading(true)
     setListError(null)
     try {
-      const res = await proposalsApi.getProposalRequests()
+      const res = await proposalsApi.getProposalRequests(p)
       const mapped = res.data.map(mapToRfpItem)
       setRfps(mapped)
+      if (res.meta) setMeta(res.meta)
       if (mapped.length > 0 && !selectedId) {
         setSelectedId(mapped[0].id)
       }
@@ -112,7 +113,7 @@ export default function RfpInboxPage() {
     }
   }
 
-  useEffect(() => { fetchList() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchList(page) }, [page]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Fetch detail when selection changes ──────────────────────────────────
   useEffect(() => {
@@ -141,17 +142,14 @@ export default function RfpInboxPage() {
 
   // ── Filtering ────────────────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    return rfps.filter((r) => {
-      const matchesFilter = filter === 'all' || r.status === filter
-      const q = search.toLowerCase()
-      const matchesSearch =
-        !q ||
-        r.company.toLowerCase().includes(q) ||
-        r.eventType.toLowerCase().includes(q) ||
-        r.contactName.toLowerCase().includes(q)
-      return matchesFilter && matchesSearch
-    })
-  }, [rfps, filter, search])
+    const q = search.toLowerCase()
+    return rfps.filter((r) =>
+      !q ||
+      r.company.toLowerCase().includes(q) ||
+      r.eventType.toLowerCase().includes(q) ||
+      r.contactName.toLowerCase().includes(q),
+    )
+  }, [rfps, search])
 
   const selected = rfps.find((r) => r.id === selectedId) ?? null
 
@@ -161,20 +159,12 @@ export default function RfpInboxPage() {
     setMobileShowDetail(true)
   }
 
-  function handleApprove(rfpId: string) {
-    setRfps((prev) =>
-      prev.map((r) => (r.id === rfpId ? { ...r, status: 'sent', stage: 'approval' } : r)),
-    )
-  }
-
   // ── Render ───────────────────────────────────────────────────────────────
   return (
     <>
       <RfpTopBar
         onSearch={setSearch}
-        activeFilter={filter}
-        onFilterChange={setFilter}
-        totalCount={listLoading ? undefined : filtered.length}
+        totalCount={listLoading ? undefined : meta?.total ?? filtered.length}
       />
 
       <div className="flex h-[calc(100vh-57px)] md:h-[calc(100vh-65px)] overflow-hidden">
@@ -191,11 +181,11 @@ export default function RfpInboxPage() {
         >
           <div className="px-4 py-3 border-b border-surface-container bg-surface-container-lowest sticky top-0 z-[1] flex items-center justify-between">
             <span className="text-xs font-label uppercase tracking-widest text-secondary">
-              {listLoading ? 'Loading…' : `${filtered.length} ${filtered.length === 1 ? 'Request' : 'Requests'}`}
+              {listLoading ? 'Loading…' : `${meta?.total ?? filtered.length} ${(meta?.total ?? filtered.length) === 1 ? 'Request' : 'Requests'}`}
             </span>
             {!listLoading && (
               <button
-                onClick={fetchList}
+                onClick={() => fetchList(page)}
                 aria-label="Refresh"
                 className="p-1 text-secondary hover:text-on-surface transition-colors cursor-pointer rounded"
               >
@@ -227,16 +217,45 @@ export default function RfpInboxPage() {
               </div>
             </div>
           ) : (
-            <div className="divide-y divide-surface-container">
-              {filtered.map((rfp) => (
-                <RfpCard
-                  key={rfp.id}
-                  rfp={rfp}
-                  isActive={rfp.id === selectedId}
-                  onClick={() => handleSelectRfp(rfp.id)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="divide-y divide-surface-container">
+                {filtered.map((rfp) => (
+                  <RfpCard
+                    key={rfp.id}
+                    rfp={rfp}
+                    isActive={rfp.id === selectedId}
+                    onClick={() => handleSelectRfp(rfp.id)}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {meta && meta.total_pages > 1 && !search && (
+                <div className="sticky bottom-0 bg-surface-container-lowest border-t border-surface-container px-4 py-3 flex items-center justify-between">
+                  <span className="text-xs text-secondary">
+                    {page} / {meta.total_pages}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setPage((p) => p - 1)}
+                      disabled={page === 1}
+                      className="p-1.5 rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setPage((p) => p + 1)}
+                      disabled={page === meta.total_pages}
+                      className="p-1.5 rounded text-secondary hover:text-on-surface hover:bg-surface-container transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </aside>
 
@@ -278,13 +297,10 @@ export default function RfpInboxPage() {
                       <span className="sm:hidden">Products</span>
                     </button>
                   </div>
-                  <div className="shrink-0 w-full sm:w-80">
-                    <ProposalLifecycle currentStage={selected.stage} />
-                  </div>
                 </div>
 
                 <div className="flex gap-1 mt-4">
-                  {(['inquiry', 'draft', 'chat'] as DetailTab[]).map((tab) => (
+                  {(['inquiry', 'chat'] as DetailTab[]).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setDetailTab(tab)}
@@ -295,7 +311,7 @@ export default function RfpInboxPage() {
                           : 'text-secondary hover:text-[#0a1b39] hover:bg-surface-container-low'}
                       `}
                     >
-                      {tab === 'draft' ? 'AI Draft' : tab === 'chat' ? 'Chat' : 'Inquiry'}
+                      {tab === 'chat' ? 'Chat' : 'Inquiry'}
                     </button>
                   ))}
                 </div>
@@ -314,12 +330,6 @@ export default function RfpInboxPage() {
                   </div>
                 ) : detailTab === 'inquiry' ? (
                   <RfpInquiryPanel rfp={selected} />
-                ) : detailTab === 'draft' ? (
-                  <RfpDraftPanel
-                    rfp={selected}
-                    onApprove={handleApprove}
-                    onRegenerate={(id) => console.log('Regenerate:', id)}
-                  />
                 ) : (
                   <RfpChatPanel
                     proposalRequestId={parseInt(selected.id, 10)}

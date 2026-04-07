@@ -1,30 +1,6 @@
-import { Calendar, Users, Sparkles, Clock, CheckCircle } from 'lucide-react'
+import { Calendar, Users, CheckCircle, Clock } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import type { RfpItem, RfpStatus } from '../../types/rfp'
-
-interface StatusConfig {
-  label: string
-  className: string
-  icon: React.ElementType
-}
-
-const STATUS_CONFIG: Record<RfpStatus, StatusConfig> = {
-  'ai-draft': {
-    label: 'AI Draft Ready',
-    className: 'bg-primary-container/20 text-primary border border-primary/20',
-    icon: Sparkles,
-  },
-  'pending': {
-    label: 'Pending',
-    className: 'bg-surface-container text-on-surface-variant border border-outline-variant/30',
-    icon: Clock,
-  },
-  'sent': {
-    label: 'Sent',
-    className: 'bg-tertiary-container/20 text-tertiary border border-tertiary/20',
-    icon: CheckCircle,
-  },
-}
+import type { RfpItem } from '../../types/rfp'
 
 interface RfpCardProps {
   rfp: RfpItem
@@ -33,8 +9,7 @@ interface RfpCardProps {
 }
 
 export default function RfpCard({ rfp, isActive = false, onClick }: RfpCardProps) {
-  const status = STATUS_CONFIG[rfp.status]
-  const StatusIcon = status.icon
+  const draftSent = Boolean(rfp.proposal_uuid)
 
   return (
     <button
@@ -55,14 +30,14 @@ export default function RfpCard({ rfp, isActive = false, onClick }: RfpCardProps
         <span className="text-[11px] text-secondary whitespace-nowrap shrink-0">{rfp.receivedAt}</span>
       </div>
 
-      {/* Event type */}
-      <p className="text-xs text-secondary mb-3 line-clamp-1">{rfp.eventType}</p>
+      {/* Contact name */}
+      <p className="text-xs text-secondary mb-3 line-clamp-1">{rfp.contactName}</p>
 
       {/* Guests + dates */}
       <div className="flex items-center gap-3 mb-3 text-xs text-on-surface-variant">
         <span className="flex items-center gap-1">
           <Users className="w-3.5 h-3.5" />
-          {rfp.guests} guests
+          {rfp.guests > 0 ? `${rfp.guests} guests` : 'Guests TBD'}
         </span>
         <span className="flex items-center gap-1">
           <Calendar className="w-3.5 h-3.5" />
@@ -70,12 +45,19 @@ export default function RfpCard({ rfp, isActive = false, onClick }: RfpCardProps
         </span>
       </div>
 
-      {/* Status badge */}
+      {/* Draft status badge */}
       <div className="flex items-center gap-1.5">
-        <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium', status.className)}>
-          <StatusIcon className="w-3 h-3" />
-          {status.label}
-        </span>
+        {draftSent ? (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <CheckCircle className="w-3 h-3" />
+            Draft Sent
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-surface-container text-on-surface-variant border border-outline-variant/30">
+            <Clock className="w-3 h-3" />
+            Draft Not Sent
+          </span>
+        )}
       </div>
     </button>
   )

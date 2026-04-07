@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   FileText,
@@ -6,13 +6,13 @@ import {
   Users,
   Settings,
   Inbox,
-  Plus,
   HelpCircle,
   LogOut,
   LucideIcon,
   Library,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { proposalsApi } from '../../api'
 
 export interface NavItem {
   key: string
@@ -24,7 +24,6 @@ export interface NavItem {
 export const DEFAULT_NAV_ITEMS: NavItem[] = [
   { key: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard, path: '/dashboard'  },
   { key: 'rfp-inbox',  label: 'RFP Inbox',  icon: Inbox,           path: '/inbox'      },
-  { key: 'proposals',  label: 'Proposals',  icon: FileText,        path: '/proposals'  },
   { key: 'analytics',  label: 'Analytics',  icon: BarChart2,       path: '/analytics'  },
   { key: 'content',    label: 'Content',    icon: Library,         path: '/content'    },
   { key: 'clients',    label: 'Clients',    icon: Users,           path: '/clients'    },
@@ -35,7 +34,6 @@ interface SideNavProps {
   navItems?: NavItem[]
   isMobileOpen?: boolean
   onMobileClose?: () => void
-  onNewProposal?: () => void
   onSupport?: () => void
   onSignOut?: () => void
 }
@@ -61,11 +59,19 @@ export default function SideNav({
   navItems = DEFAULT_NAV_ITEMS,
   isMobileOpen = false,
   onMobileClose,
-  onNewProposal,
   onSupport,
   onSignOut,
 }: SideNavProps) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+
+  async function handleSignOut() {
+    try {
+      await proposalsApi.logout()
+    } finally {
+      navigate('/login')
+    }
+  }
 
   return (
     <nav
@@ -117,25 +123,8 @@ export default function SideNav({
         })}
       </div>
 
-      {/* Bottom: CTA + support */}
+      {/* Bottom: support + sign out */}
       <div className="mt-auto px-2 lg:px-2">
-        {/* New Proposal button */}
-        <div className="relative group mb-4">
-          <button
-            onClick={onNewProposal}
-            className={cn(
-              'w-full primary-gradient text-white rounded-xl font-bold flex items-center justify-center gap-2',
-              'shadow-lg active:scale-95 transition-transform cursor-pointer hover:brightness-110',
-              // Full button on mobile/tablet, icon-only circle on lg
-              'py-4 px-4 lg:py-3 lg:rounded-full',
-            )}
-          >
-            <Plus className="w-5 h-5 shrink-0" />
-            <span className="lg:hidden text-sm">New Proposal</span>
-          </button>
-          <Tooltip label="New Proposal" />
-        </div>
-
         <div className="border-t border-white/10 pt-3 flex flex-col gap-1">
           {/* Support */}
           <div className="relative group">
@@ -152,7 +141,7 @@ export default function SideNav({
           {/* Sign Out */}
           <div className="relative group">
             <button
-              onClick={onSignOut}
+              onClick={handleSignOut}
               className="w-full flex items-center gap-3 px-4 py-2 lg:px-0 lg:justify-center text-slate-400 hover:text-white transition-colors cursor-pointer"
             >
               <LogOut className="w-4 h-4 shrink-0" />

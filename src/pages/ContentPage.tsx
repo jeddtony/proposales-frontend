@@ -386,22 +386,23 @@ export default function ContentPage() {
   const [search, setSearch] = useState('')
   const [toast, setToast] = useState<{ show: boolean; title: string; action?: string }>({ show: false, title: '' })
 
-  useEffect(() => {
-    let cancelled = false
+  function fetchItems() {
+    setLoading(true)
+    setError(null)
     proposalsApi
       .getContent()
-      .then((res) => { if (!cancelled) setItems(res.data) })
-      .catch((err) => {
-        if (!cancelled)
-          setError(
-            err instanceof ApiError
-              ? `Failed to load content (${err.status})`
-              : 'Could not load content.',
-          )
-      })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
-  }, [])
+      .then((res) => setItems(res.data))
+      .catch((err) =>
+        setError(
+          err instanceof ApiError
+            ? `Failed to load content (${err.status})`
+            : 'Could not load content.',
+        ),
+      )
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { fetchItems() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleDelete(variationId: number) {
     setDeletingId(variationId)
@@ -527,9 +528,12 @@ export default function ContentPage() {
 
       {bulkOpen && (
         <BulkUploadModal
-          onClose={() => setBulkOpen(false)}
-          onUploaded={() => {
+          onClose={() => {
             setBulkOpen(false)
+            fetchItems()
+          }}
+          onUploaded={() => {
+            fetchItems()
             setToast({ show: true, title: 'Bulk upload complete' })
           }}
         />

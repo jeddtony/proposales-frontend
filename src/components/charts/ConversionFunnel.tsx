@@ -19,9 +19,8 @@ interface ConversionFunnelProps {
 }
 
 const DEFAULT_STAGES: FunnelStage[] = [
-  { label: 'Sent', percentage: 100, count: '842 Proposals' },
-  { label: 'Viewed', percentage: 82, count: '690 Views' },
-  { label: 'Accepted', percentage: 68, count: '572 Wins', highlight: true },
+  { label: 'Draft', percentage: 100, count: '842 Proposals', highlight: true },
+  { label: 'Pending', percentage: 82, count: '690 Views' },
 ]
 
 const DEFAULT_FOOTER: FunnelFooterStat[] = [

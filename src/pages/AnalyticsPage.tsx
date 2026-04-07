@@ -1,42 +1,22 @@
-import { Gauge, ShieldCheck, History } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Gauge, ShieldCheck, History, Loader2, AlertCircle } from 'lucide-react'
 import TopBar from '../components/layout/TopBar'
 import AIInsightBanner from '../components/ui/AIInsightBanner'
-import MetricCard from '../components/ui/MetricCard'
 import WorkspaceStats from '../components/ui/WorkspaceStats'
 import ConversionFunnel from '../components/charts/ConversionFunnel'
 import DayBarChart from '../components/charts/DayBarChart'
 import VolumeLineChart from '../components/charts/VolumeLineChart'
+import { proposalsApi, ApiError } from '../api'
+import type { DashboardStats, ProposalStat } from '../api/proposals'
 
-const METRICS = [
-  {
-    label: 'Total Proposals Sent',
-    value: '842',
-    trend: '3%',
-    trendUp: false,
-    isPositive: false,
-  },
-  {
-    label: 'Acceptance Rate',
-    value: '68.4%',
-    trend: '12%',
-    trendUp: true,
-    isPositive: true,
-  },
-  {
-    label: 'Avg. Response Time',
-    value: '4.2h',
-    trend: '18%',
-    trendUp: false,
-    isPositive: true, // lower is better
-  },
-  {
-    label: 'Revenue Attributed',
-    value: '$1.2M',
-    trend: '24%',
-    trendUp: true,
-    isPositive: true,
-  },
-]
+function toFunnelStages(proposalStats: ProposalStat[]) {
+  return proposalStats.map((s) => ({
+    label: s.label,
+    percentage: s.percentage,
+    count: s.count,
+    highlight: s.highlight,
+  }))
+}
 
 const WORKSPACE_STATS = [
   { icon: Gauge, label: 'System Load', value: 'Optimal (0.4s lat)' },
@@ -45,6 +25,24 @@ const WORKSPACE_STATS = [
 ]
 
 export default function AnalyticsPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    proposalsApi
+      .getDashboardStats()
+      .then((res) => setStats(res.data))
+      .catch((err) => {
+        setError(
+          err instanceof ApiError
+            ? `Failed to load stats (${err.status})`
+            : 'Could not load dashboard stats.',
+        )
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <>
       <TopBar title="Proposal Analytics" />
@@ -57,15 +55,53 @@ export default function AnalyticsPage() {
         />
 
         {/* KPI metrics */}
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {METRICS.map((m) => (
-            <MetricCard key={m.label} {...m} />
-          ))}
-        </section>
+        {loading ? (
+          <div className="flex items-center justify-center h-32">
+            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-32 gap-3 text-center">
+            <AlertCircle className="w-7 h-7 text-error" />
+            <p className="text-sm text-on-surface-variant">{error}</p>
+          </div>
+        ) : stats ? (
+          <>
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+                <p className="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-3">
+                  Total RFPs
+                </p>
+                <span className="text-3xl font-bold font-headline text-on-surface">
+                  {stats.total_rfps.toLocaleString()}
+                </span>
+              </div>
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+                <p className="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-3">
+                  Total Clients
+                </p>
+                <span className="text-3xl font-bold font-headline text-on-surface">
+                  {stats.total_clients.toLocaleString()}
+                </span>
+              </div>
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+                <p className="text-xs font-label font-bold uppercase tracking-widest text-on-surface-variant mb-3">
+                  RFPs Last 7 Days
+                </p>
+                <span className="text-3xl font-bold font-headline text-on-surface">
+                  {stats.rfps_last_7_days.toLocaleString()}
+                </span>
+              </div>
+            </section>
+
+          </>
+        ) : null}
 
         {/* Charts row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-          <ConversionFunnel />
+          <ConversionFunnel
+            stages={stats && stats.proposal_stats.length > 0 ? toFunnelStages(stats.proposal_stats) : undefined}
+            footerStats={[]}
+          />
           <DayBarChart />
         </div>
 

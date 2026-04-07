@@ -16,6 +16,9 @@ interface FormState {
   company_name: string
   email: string
   phone_number: string
+  event_date: string
+  guests: string
+  budget: string
   details: string
 }
 
@@ -24,6 +27,9 @@ const EMPTY_FORM: FormState = {
   company_name: '',
   email: '',
   phone_number: '',
+  event_date: '',
+  guests: '',
+  budget: '',
   details: '',
 }
 
@@ -255,7 +261,16 @@ function ContactSection() {
     setSubmitting(true)
     setError(null)
     try {
-      await proposalsApi.createProposalRequest(form)
+      await proposalsApi.createProposalRequest({
+        name: form.name,
+        company_name: form.company_name,
+        email: form.email,
+        phone_number: form.phone_number,
+        details: form.details,
+        ...(form.event_date && { event_date: form.event_date }),
+        ...(form.guests && { guests: Number(form.guests) }),
+        ...(form.budget && { budget: Number(form.budget) }),
+      })
       setSubmitted(true)
       setForm(EMPTY_FORM)
     } catch (err) {
@@ -338,13 +353,27 @@ function ContactSection() {
                   <input id="lp-phone" type="tel" value={form.phone_number} onChange={(e) => set('phone_number', e.target.value)} placeholder="+1 212 555 0123" className={inputCls} />
                 </div>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div>
+                  <label className={labelCls} htmlFor="lp-date">Event Date</label>
+                  <input id="lp-date" type="date" value={form.event_date} onChange={(e) => set('event_date', e.target.value)} className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls} htmlFor="lp-guests">Number of Guests</label>
+                  <input id="lp-guests" type="number" min="1" value={form.guests} onChange={(e) => set('guests', e.target.value)} placeholder="250" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls} htmlFor="lp-budget">Budget (SEK)</label>
+                  <input id="lp-budget" type="number" min="0" value={form.budget} onChange={(e) => set('budget', e.target.value)} placeholder="50000" className={inputCls} />
+                </div>
+              </div>
               <div>
                 <label className={labelCls} htmlFor="lp-details">Tell Us About Your Vision</label>
                 <textarea
                   id="lp-details"
                   value={form.details}
                   onChange={(e) => set('details', e.target.value)}
-                  placeholder="Event type, guest count, date range, special requirements…"
+                  placeholder="Tell us about your guests — are they corporate executives, a wedding party, or celebrating a milestone? What atmosphere or experience do you want them to walk away with? Any themes, cuisine preferences, entertainment ideas, or special touches that would make the event unforgettable?"
                   rows={4}
                   className={`${inputCls} resize-none`}
                 />
