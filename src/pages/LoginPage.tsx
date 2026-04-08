@@ -61,9 +61,9 @@ export default function LoginPage() {
             </a>
           ))}
         </div>
-        <button className="bg-white/10 backdrop-blur-sm text-white border border-white/20 px-4 sm:px-6 py-2 sm:py-2.5 rounded uppercase tracking-[0.15em] text-[10px] font-bold hover:bg-white/20 transition-colors duration-200 cursor-pointer">
+        <a href="/#contact" className="bg-white/10 backdrop-blur-sm text-white border border-white/20 px-4 sm:px-6 py-2 sm:py-2.5 rounded uppercase tracking-[0.15em] text-[10px] font-bold hover:bg-white/20 transition-colors duration-200 cursor-pointer">
           Book Now
-        </button>
+        </a>
       </nav>
 
       {/* Main */}

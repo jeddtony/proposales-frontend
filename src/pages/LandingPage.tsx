@@ -530,6 +530,14 @@ function Footer() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
+  useEffect(() => {
+    const { hash } = window.location
+    if (hash) {
+      const el = document.querySelector(hash)
+      if (el) el.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [])
+
   return (
     <div className="scroll-smooth" style={{ fontFamily: 'Inter, sans-serif' }}>
       <Nav />
