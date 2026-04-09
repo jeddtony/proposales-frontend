@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Phone, ArrowRight, ChevronDown, Loader2, CheckCircle2 } from 'lucide-react'
 import { proposalsApi, ApiError } from '../api'
 
@@ -63,7 +62,6 @@ const SPACES = [
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
-  const navigate = useNavigate()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -107,8 +105,8 @@ function Nav() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate('/login')}
+          <a
+            href="/login"
             className="font-headline uppercase tracking-[0.2em] text-[11px] font-semibold px-4 py-2.5 rounded-lg border transition-all duration-300 cursor-pointer"
             style={{
               color: scrolled ? '#0F1F3D' : '#F5F0E8',
@@ -118,7 +116,7 @@ function Nav() {
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = scrolled ? '#0F1F3D' : '#F5F0E8'; (e.currentTarget as HTMLElement).style.borderColor = scrolled ? 'rgba(15,31,61,0.25)' : 'rgba(245,240,232,0.35)' }}
           >
             Login
-          </button>
+          </a>
           <a
             href="#contact"
             className="bg-[#00071b] text-white px-5 py-2.5 rounded-lg font-label text-[11px] uppercase tracking-widest hover:scale-105 transition-transform duration-300 cursor-pointer"
