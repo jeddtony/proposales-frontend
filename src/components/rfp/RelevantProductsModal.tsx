@@ -26,12 +26,18 @@ export default function RelevantProductsModal({
         if (!cancelled) setProducts(res.data)
       })
       .catch((err) => {
-        if (!cancelled)
-          setError(
-            err instanceof ApiError
-              ? `Failed to load suggestions (${err.status})`
-              : 'Could not load product suggestions.',
-          )
+        if (!cancelled) {
+          if (err instanceof ApiError) {
+            try {
+              const body = JSON.parse(err.message)
+              setError(body.message ?? `Failed to load suggestions (${err.status})`)
+            } catch {
+              setError(`Failed to load suggestions (${err.status})`)
+            }
+          } else {
+            setError('Could not load product suggestions.')
+          }
+        }
       })
       .finally(() => { if (!cancelled) setLoading(false) })
 
