@@ -373,7 +373,7 @@ function ContactSection() {
                   id="lp-details"
                   value={form.details}
                   onChange={(e) => set('details', e.target.value)}
-                  placeholder="Tell us about your guests — are they corporate executives, a wedding party, or celebrating a milestone? What atmosphere or experience do you want them to walk away with? Any themes, cuisine preferences, entertainment ideas, or special touches that would make the event unforgettable?"
+                  placeholder="Tell us about your guests. Are they corporate executives, a wedding party, or celebrating a milestone? What atmosphere or experience do you want them to walk away with? Any themes, cuisine preferences, entertainment ideas, or special touches that would make the event unforgettable?"
                   rows={4}
                   className={`${inputCls} resize-none`}
                 />
