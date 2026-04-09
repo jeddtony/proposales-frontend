@@ -517,7 +517,7 @@ function Footer() {
 
       {/* Bottom bar */}
       <div className="max-w-[1440px] mx-auto px-6 md:px-12 py-6 border-t border-[#C9A84C]/10 flex flex-col md:flex-row justify-between items-center gap-3">
-        <p className="text-xs text-slate-400">© 2024 The Grand Venue. All rights reserved.</p>
+        <p className="text-xs text-slate-400">© 2026 The Grand Venue. All rights reserved.</p>
         <div className="flex gap-6">
           <span className="text-xs text-slate-400">5th Ave, Manhattan, NY</span>
           <span className="text-xs text-slate-400">concierge@thegrandvenue.com</span>
